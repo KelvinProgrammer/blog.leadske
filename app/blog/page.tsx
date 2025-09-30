@@ -1,3 +1,4 @@
+//app/blog/page.tsx
 import { createClient } from "@/lib/supabase/server"
 import { getAllArticles } from "@/lib/articles"
 import { Card } from "@/components/ui/card"

@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/client"
 import { useState } from "react"
 
 interface Blog {
+  slug: any
   id: string
   title: string
   excerpt: string | null
