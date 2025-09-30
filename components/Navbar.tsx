@@ -16,7 +16,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu, PenSquare, LogOut, Settings, User } from "lucide-react"
 
-interface HeaderProps {
+interface NavbarProps {
   user?: {
     id: string
     email?: string
@@ -27,7 +27,7 @@ interface HeaderProps {
   }
 }
 
-export function Header({ user }: HeaderProps) {
+export function Navbar({ user }: NavbarProps) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
