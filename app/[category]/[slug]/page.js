@@ -1,3 +1,4 @@
+// app/[category]/[slug]/page.js
 import Header from "../../../components/Header"
 import Footer from "../../../components/Footer"
 import ShareButtons from "../../../components/ShareButtons"

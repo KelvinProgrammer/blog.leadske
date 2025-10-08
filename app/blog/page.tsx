@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { getAllArticles } from "@/lib/articles"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 
@@ -14,27 +15,17 @@ export default async function BlogListPage({
   const { category } = await searchParams
   const supabase = await createClient()
 
-  let query = supabase
+  // Fetch Supabase blogs
+  const { data: supabaseBlogs } = await supabase
     .from("blogs")
-    .select("*, profiles(display_name)")
+    .select("*")
     .eq("status", "published")
     .order("published_at", { ascending: false })
-
-  if (category) {
-    query = query.eq("category", category)
-  }
-
-  const { data: supabaseBlogs } = await query
 
   // Get static articles
   const staticArticles = getAllArticles()
 
-  // Filter static articles by category if needed
-  const filteredStaticArticles = category
-    ? staticArticles.filter((article) => article.category.toLowerCase() === category.toLowerCase())
-    : staticArticles
-
-  // Combine and format both data sources
+  // Combine both sources FIRST, then filter by category
   const allBlogs = [
     ...(supabaseBlogs || []).map((blog) => ({
       id: blog.id,
@@ -48,10 +39,11 @@ export default async function BlogListPage({
       }),
       slug: blog.slug,
       featured_image: blog.featured_image,
+      author: blog.author,
       isSupabase: true,
       sortDate: new Date(blog.published_at),
     })),
-    ...filteredStaticArticles.map((article) => ({
+    ...staticArticles.map((article) => ({
       id: article.slug,
       title: article.title,
       excerpt: article.excerpt,
@@ -59,11 +51,23 @@ export default async function BlogListPage({
       date: article.date,
       slug: article.slug,
       featured_image: `/placeholder.svg?height=400&width=800&query=${encodeURIComponent(article.image)}`,
+      author: article.author,
       isSupabase: false,
       categorySlug: article.categorySlug,
       sortDate: new Date(article.date),
     })),
-  ].sort((a, b) => b.sortDate - a.sortDate)
+  ]
+
+  // Filter by category if specified
+  const filteredBlogs = category
+    ? allBlogs.filter((blog) => blog.category.toLowerCase() === category.toLowerCase())
+    : allBlogs
+
+  // Sort by date
+  const sortedBlogs = filteredBlogs.sort((a, b) => b.sortDate.getTime() - a.sortDate.getTime())
+
+  // Get unique categories from all blogs
+  const allCategories = [...new Set(allBlogs.map(blog => blog.category))]
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,16 +77,40 @@ export default async function BlogListPage({
             pulse.
           </Link>
           <h1 className="text-4xl font-serif font-light text-foreground mb-2">
-            {category ? `${category} Stories` : "All Stories"}
+            {category ? `${category.charAt(0).toUpperCase() + category.slice(1)} Stories` : "All Stories"}
           </h1>
-          <p className="text-muted-foreground">Discover the latest news and insights</p>
+          <p className="text-muted-foreground mb-6">Discover the latest news and insights</p>
+          
+          {/* Category Filter */}
+          {allCategories.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              <Link href="/blog">
+                <Badge 
+                  variant={!category ? "default" : "outline"} 
+                  className="cursor-pointer hover:bg-accent transition-colors"
+                >
+                  All
+                </Badge>
+              </Link>
+              {allCategories.map((cat) => (
+                <Link key={cat} href={`/blog?category=${cat.toLowerCase()}`}>
+                  <Badge 
+                    variant={category?.toLowerCase() === cat.toLowerCase() ? "default" : "outline"}
+                    className="cursor-pointer hover:bg-accent transition-colors"
+                  >
+                    {cat}
+                  </Badge>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {allBlogs && allBlogs.length > 0 ? (
+        {sortedBlogs && sortedBlogs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {allBlogs.map((blog) => (
+            {sortedBlogs.map((blog) => (
               <Card key={blog.id} className="overflow-hidden border-0 shadow-sm hover:shadow-md transition-shadow">
                 {blog.featured_image && (
                   <div
@@ -115,9 +143,16 @@ export default async function BlogListPage({
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">No published stories found.</p>
-            <Link href="/">
-              <Button variant="outline">Back to Home</Button>
+            <p className="text-muted-foreground mb-4">
+              {category 
+                ? `No stories found in the ${category} category.`
+                : "No published stories found."
+              }
+            </p>
+            <Link href={category ? "/blog" : "/"}>
+              <Button variant="outline">
+                {category ? "View All Stories" : "Back to Home"}
+              </Button>
             </Link>
           </div>
         )}
