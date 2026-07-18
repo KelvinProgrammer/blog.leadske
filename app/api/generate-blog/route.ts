@@ -1,4 +1,5 @@
 import { streamText } from "ai"
+import { createOpenAI } from "@ai-sdk/openai"
 import { createClient } from "@/lib/supabase/server"
 
 export async function POST(req: Request) {
@@ -36,14 +37,30 @@ Please write an engaging, well-structured blog post with:
 
 Format the content in markdown with proper headings (##, ###) and paragraphs.`
 
+    const provider = process.env.AI_PROVIDER || "openai"
+    let modelInstance
+
+    if (provider === "deepseek") {
+      const deepseekClient = createOpenAI({
+        apiKey: process.env.DEEPSEEK_API_KEY || "",
+        baseURL: "https://api.deepseek.com/v1",
+      })
+      modelInstance = deepseekClient.chat("deepseek-chat")
+    } else {
+      const openaiClient = createOpenAI({
+        apiKey: process.env.OPENAI_API_KEY || "",
+      })
+      modelInstance = openaiClient("gpt-4o-mini")
+    }
+
     const result = streamText({
-      model: "openai/gpt-4o-mini",
+      model: modelInstance,
       prompt,
       temperature: 0.7,
       maxTokens: 2000,
     })
 
-    return result.toDataStreamResponse()
+    return result.toTextStreamResponse()
   } catch (error) {
     console.error("[v0] Error generating blog:", error)
     return new Response("Error generating content", { status: 500 })

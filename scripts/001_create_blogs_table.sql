@@ -6,9 +6,13 @@ CREATE TABLE IF NOT EXISTS public.blogs (
   content TEXT NOT NULL,
   excerpt TEXT,
   featured_image TEXT,
+  video_url TEXT,
   category TEXT NOT NULL,
   author_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
+  meta_title TEXT,
+  meta_description TEXT,
+  meta_keywords TEXT,
   published_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

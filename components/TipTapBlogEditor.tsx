@@ -12,6 +12,7 @@ import TextAlign from '@tiptap/extension-text-align'
 import Placeholder from '@tiptap/extension-placeholder'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { common, createLowlight } from 'lowlight'
+import { marked } from 'marked'
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -121,7 +122,7 @@ export function TipTapBlogEditor({ userId, blog, initialTitle, initialContent }:
         lowlight,
       }),
     ],
-    content: blog?.content || initialContent || '',
+    content: blog?.content || (initialContent ? marked.parse(initialContent, { async: false }) as string : ''),
     editorProps: {
       attributes: {
         class: 'prose prose-lg max-w-none focus:outline-none min-h-[400px] p-4',
@@ -139,7 +140,8 @@ export function TipTapBlogEditor({ userId, blog, initialTitle, initialContent }:
       setSlug(generateSlug(titleParam))
     }
     if (contentParam && !blog && editor) {
-      editor.commands.setContent(contentParam)
+      const html = marked.parse(contentParam, { async: false }) as string
+      editor.commands.setContent(html)
     }
   }, [searchParams, blog, editor])
 
