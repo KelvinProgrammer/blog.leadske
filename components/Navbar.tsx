@@ -34,6 +34,7 @@ export function Navbar({ user }: NavbarProps) {
   const navigation = [
     { name: "Dashboard", href: "/dashboard" },
     { name: "New Post", href: "/dashboard/new" },
+    { name: "Auto-Publish", href: "/dashboard/autopublish" },
     { name: "AI Writer", href: "/dashboard/ai-writer" },
     { name: "Blog", href: "/blog" },
   ]
