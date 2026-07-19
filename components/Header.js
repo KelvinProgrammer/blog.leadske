@@ -11,23 +11,28 @@ export default function Header() {
             <Button variant="ghost" size="sm" className="md:hidden">
               <Menu className="h-5 w-5" />
             </Button>
-            <div className="font-serif text-2xl font-light text-foreground">pulse.</div>
+            <Link href="/" className="font-serif text-2xl font-light text-foreground">
+              pulse.
+            </Link>
             <nav className="hidden md:flex items-center gap-8">
-              <a href="/world" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Blog
+              </Link>
+              <Link href="/world" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 World
-              </a>
-              <a href="/politics" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              </Link>
+              <Link href="/politics" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Politics
-              </a>
-              <a href="/business" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              </Link>
+              <Link href="/business" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Business
-              </a>
-              <a href="/technology" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              </Link>
+              <Link href="/technology" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Technology
-              </a>
-              <a href="/culture" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              </Link>
+              <Link href="/culture" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Culture
-              </a>
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4">

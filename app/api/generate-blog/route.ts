@@ -57,7 +57,6 @@ Format the content in markdown with proper headings (##, ###) and paragraphs.`
       model: modelInstance,
       prompt,
       temperature: 0.7,
-      maxTokens: 2000,
     })
 
     return result.toTextStreamResponse()

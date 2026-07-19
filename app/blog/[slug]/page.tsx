@@ -136,9 +136,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             )}
 
             {/* Article Content */}
-            <div className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-serif prose-headings:font-light prose-a:text-accent mb-8">
-              <ReactMarkdown>{blog.content}</ReactMarkdown>
-            </div>
+            {blog.content && (blog.content.trim().startsWith("<") || /<[a-z][\s\S]*>/i.test(blog.content)) ? (
+              <div
+                className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-serif prose-headings:font-light prose-a:text-accent mb-8"
+                dangerouslySetInnerHTML={{ __html: blog.content }}
+              />
+            ) : (
+              <div className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-serif prose-headings:font-light prose-a:text-accent mb-8">
+                <ReactMarkdown>{blog.content}</ReactMarkdown>
+              </div>
+            )}
 
             {/* Share Buttons */}
             <ShareButtons title={blog.title} />

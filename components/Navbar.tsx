@@ -35,6 +35,7 @@ export function Navbar({ user }: NavbarProps) {
     { name: "Dashboard", href: "/dashboard" },
     { name: "New Post", href: "/dashboard/new" },
     { name: "AI Writer", href: "/dashboard/ai-writer" },
+    { name: "Blog", href: "/blog" },
   ]
 
   const getUserInitials = () => {

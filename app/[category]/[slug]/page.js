@@ -8,11 +8,43 @@ import TopStories from "../../../components/TopStories"
 import { Badge } from "@/components/ui/badge"
 import { Clock, User, Calendar } from "lucide-react"
 import { getArticleBySlug, getRelatedArticles, getTopStories } from "../../../lib/articles"
+import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 
-export default function ArticlePage({ params }) {
-  const { category, slug } = params
-  const article = getArticleBySlug(category, slug)
+export default async function ArticlePage({ params }) {
+  const { category, slug } = await params
+  const supabase = await createClient()
+
+  // First try fetching from Supabase
+  const { data: supabaseBlog } = await supabase
+    .from("blogs")
+    .select("*")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .single()
+
+  let article = null
+
+  if (supabaseBlog) {
+    article = {
+      title: supabaseBlog.title,
+      category: supabaseBlog.category,
+      author: supabaseBlog.author || "Editorial Team",
+      date: new Date(supabaseBlog.published_at || supabaseBlog.created_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+      readTime: `${Math.max(1, Math.ceil((supabaseBlog.content || "").split(/\s+/).length / 200))} min read`,
+      excerpt: supabaseBlog.excerpt,
+      content: supabaseBlog.content,
+      image: supabaseBlog.featured_image,
+      isSupabaseImage: true,
+      videoUrl: supabaseBlog.video_url,
+    }
+  } else {
+    article = getArticleBySlug(category, slug)
+  }
 
   if (!article) {
     notFound()
@@ -20,6 +52,8 @@ export default function ArticlePage({ params }) {
 
   const relatedArticles = getRelatedArticles(category, slug)
   const topStories = getTopStories()
+
+  const isHtml = typeof article.content === "string" && (article.content.trim().startsWith("<") || /<[a-z][\s\S]*>/i.test(article.content))
 
   return (
     <div className="min-h-screen bg-background">
@@ -35,7 +69,9 @@ export default function ArticlePage({ params }) {
               <h1 className="text-4xl md:text-5xl font-serif font-light text-foreground mb-6 leading-tight">
                 {article.title}
               </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed mb-6">{article.excerpt}</p>
+              {article.excerpt && (
+                <p className="text-xl text-muted-foreground leading-relaxed mb-6">{article.excerpt}</p>
+              )}
 
               {/* Article Meta */}
               <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground border-y border-border py-4">
@@ -55,13 +91,15 @@ export default function ArticlePage({ params }) {
             </div>
 
             {/* Featured Image */}
-            <div className="mb-8">
-              <img
-                src={`/.jpg?height=600&width=1200&query=${encodeURIComponent(article.image)}`}
-                alt={article.title}
-                className="w-full h-auto rounded-lg"
-              />
-            </div>
+            {article.image && (
+              <div className="mb-8">
+                <img
+                  src={article.isSupabaseImage ? article.image : `/.jpg?height=600&width=1200&query=${encodeURIComponent(article.image)}`}
+                  alt={article.title}
+                  className="w-full h-auto rounded-lg object-cover"
+                />
+              </div>
+            )}
 
             {/* Video if available */}
             {article.videoUrl && (
@@ -76,13 +114,20 @@ export default function ArticlePage({ params }) {
             )}
 
             {/* Article Content */}
-            <div className="prose prose-lg max-w-none mb-8">
-              {article.content.split("\n\n").map((paragraph, index) => (
-                <p key={index} className="text-foreground leading-relaxed mb-6">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+            {isHtml ? (
+              <div
+                className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-serif prose-headings:font-light prose-a:text-accent mb-8"
+                dangerouslySetInnerHTML={{ __html: article.content }}
+              />
+            ) : (
+              <div className="prose prose-lg max-w-none mb-8">
+                {article.content ? article.content.split("\n\n").map((paragraph, index) => (
+                  <p key={index} className="text-foreground leading-relaxed mb-6">
+                    {paragraph}
+                  </p>
+                )) : null}
+              </div>
+            )}
 
             {/* Share Buttons */}
             <ShareButtons title={article.title} />

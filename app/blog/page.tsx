@@ -41,6 +41,7 @@ export default async function BlogListPage({
       featured_image: blog.featured_image,
       author: blog.author,
       isSupabase: true,
+      categorySlug: blog.category ? blog.category.toLowerCase() : "blog",
       sortDate: new Date(blog.published_at),
     })),
     ...staticArticles.map((article) => ({
